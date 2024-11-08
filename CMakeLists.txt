@@ -23,3 +23,4 @@ include(external/imgui.cmake)
 include(external/glm.cmake)
 
 add_subdirectory(src)
+add_subdirectory(core)
