@@ -15,7 +15,8 @@ set(CORE_INC_DIR
  CACHE PATH "CORE INCLUDE SOURCE PATH"
 )
 
-add_library(core STATIC ${CORE_SRC} ${CORE_INC} "idk/shader.h" "idk/shader.cpp" "idk/texture2d.h" "idk/texture2d.cpp" "idk/camera.h" "idk/camera.cpp")
+
+add_library(core STATIC ${CORE_SRC} ${CORE_INC} "idk/shader.h" "idk/shader.cpp" "idk/texture2d.h" "idk/texture2d.cpp" "idk/camera.h" "idk/camera.cpp" "ew/external/glad.h" "ew/external/glad.cpp")
 
 find_package(OpenGL REQUIRED)
 
