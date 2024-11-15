@@ -312,10 +312,16 @@ int main()
 			ImGui::DragFloat("Specular Strength", &specularStrengthEditable, 0.01f);
 			ImGui::DragFloat("Shininess", &shininessEditable, 0.01f);
 			ImGui::DragFloat("Diffuse Strength", &diffuseStrengthEditable, 0.01f);
-			if (ImGui::Button("TestButton"))
+			if (ImGui::Button("Reset Values"))
 			{
-				//do nothing
-				//use this later to pause and continue animation possibly
+				editModel = glm::mat4(1.0f);
+				lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
+				lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
+				objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+				ambientStrengthEditable = 0.1f;
+				specularStrengthEditable = 0.5f;
+				shininessEditable = 32.0f;
+				diffuseStrengthEditable = 0.5f;
 			}
 		}
 		ImGui::End();
