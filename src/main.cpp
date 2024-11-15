@@ -47,6 +47,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+//imgui variables
+glm::vec3 testEditer(0.0f, 0.0f, 0.0f);
+
 int main()
 {
 	printf("Initializing...");
@@ -201,6 +204,15 @@ int main()
 		// Create a window called settings
 		ImGui::Begin("Settings");
 		ImGui::Text("Controls");
+		if (ImGui::CollapsingHeader("TestCollapse"))
+		{
+			ImGui::DragFloat3("Test Edits", &testEditer.x, 0.01f);
+			if (ImGui::Button("TestButton"))
+			{
+				//do nothing
+				//use this later to pause and continue animation possibly
+			}
+		}
 		ImGui::End();
 
 		// Render IMGUI elements using OpenGL
