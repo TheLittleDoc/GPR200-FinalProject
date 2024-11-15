@@ -49,7 +49,16 @@ float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
 //imgui variables
-glm::vec3 testEditer(0.0f, 0.0f, 0.0f);
+glm::vec3 testEditer = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::mat4 editModel = glm::mat4(1.0f);
+glm::vec3 lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
+glm::vec3 lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
+glm::vec3 objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+float ambientStrengthEditable = 0.1f;
+float specularStrengthEditable = 0.5f;
+float shininessEditable = 32.0f;
+float diffuseStrengthEditable = 0.5f;
+
 
 int main()
 {
@@ -255,13 +264,14 @@ int main()
 		shader.setInt("uTexture", 0);
 		model = glm::mat4(1.0f);
 		shader.setVec3("viewPos", camera.Position);
-		shader.setVec3("lightPos", glm::vec3(1.2f, 1.0f, 2.0f));
-		shader.setVec3("lightColor", glm::vec3(1.0f, 1.0f, 1.0f));
-		shader.setVec3("objectColor", glm::vec3(1.0f, 0.5f, 0.31f));
-		shader.setFloat("ambientStrength", 0.1f);
-		shader.setFloat("specularStrength", 0.5f);
-		shader.setFloat("shininess", 32.0f);
-		shader.setFloat("diffuseStrength", 0.5f);
+		shader.setVec3("lightPos", lightPosEditable);
+		shader.setVec3("lightColor", lightColorEditable);
+		shader.setVec3("objectColor", objectColorEditable);
+		shader.setFloat("ambientStrength", ambientStrengthEditable);
+		shader.setFloat("specularStrength", specularStrengthEditable);
+		shader.setFloat("shininess", shininessEditable);
+		shader.setFloat("diffuseStrength", diffuseStrengthEditable);
+
 
 		shader.setMat4("model", model);
 		shader.setMat4("projection", projection);
@@ -293,9 +303,15 @@ int main()
 		// Create a window called settings
 		ImGui::Begin("Settings");
 		ImGui::Text("Controls");
-		if (ImGui::CollapsingHeader("TestCollapse"))
+		if (ImGui::CollapsingHeader("ShaderStuff"))
 		{
-			ImGui::DragFloat3("Test Edits", &testEditer.x, 0.01f);
+			ImGui::DragFloat3("Light Position", &lightPosEditable.x, 0.01f);
+			ImGui::DragFloat3("Light Color", &lightColorEditable.x, 0.01f);
+			ImGui::DragFloat3("Object Color", &objectColorEditable.x, 0.01f);
+			ImGui::DragFloat("Ambient Strength", &ambientStrengthEditable, 0.01f);
+			ImGui::DragFloat("Specular Strength", &specularStrengthEditable, 0.01f);
+			ImGui::DragFloat("Shininess", &shininessEditable, 0.01f);
+			ImGui::DragFloat("Diffuse Strength", &diffuseStrengthEditable, 0.01f);
 			if (ImGui::Button("TestButton"))
 			{
 				//do nothing
