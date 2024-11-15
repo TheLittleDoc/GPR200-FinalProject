@@ -48,6 +48,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+const float TERR_WIDTH = 100.0f;
+const float TERR_LENGTH = 100.0f;
+
 int main()
 {
 	printf("Initializing...");
@@ -73,11 +76,13 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 	glfwSetCursorPosCallback(window, mouse_callback);
 	glfwSetScrollCallback(window, scroll_callback);
-
+	glGetString(GL_VERSION);
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
+
+	glPatchParameteri(GL_PATCH_vertices, 4);
 
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
@@ -172,6 +177,46 @@ int main()
 		 1.0f, -1.0f,  1.0f
 	};
 
+	std::vector<float> terrainVerts;
+
+	unsigned int terrainVAO, terrainVBO;
+	unsigned int patchCount = 20;
+	for(unsigned int i = 0; i <= patchCount - 1; i++) {
+		for(unsigned int j = 0; j <= patchCount - 1; j++) {
+			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)i / (float)patchCount)); // v.x
+			terrainVerts.push_back(0.0f); // v.y
+			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)j / (float)patchCount)); // v.z
+			terrainVerts.push_back(i / (float)patchCount); // v.u
+			terrainVerts.push_back(j / (float)patchCount); // v.v
+
+			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)(i + 1) / (float)patchCount)); // v.x
+			terrainVerts.push_back(0.0f); // v.y
+			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)j / (float)patchCount)); // v.z
+			terrainVerts.push_back((i + 1) / (float)patchCount); // v.u
+			terrainVerts.push_back(j / (float)patchCount); // v.v
+
+			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)i / (float)patchCount)); // v.x
+			terrainVerts.push_back(0.0f); // v.y
+			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)(j + 1) / (float)patchCount)); // v.z
+			terrainVerts.push_back(i / (float)patchCount); // v.u
+			terrainVerts.push_back((j + 1) / (float)patchCount); // v.v
+
+			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)(i + 1) / (float)patchCount)); // v.x
+			terrainVerts.push_back(0.0f); // v.y
+			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)(j + 1) / (float)patchCount)); // v.z
+			terrainVerts.push_back((i + 1) / (float)patchCount); // v.u
+			terrainVerts.push_back((j + 1) / (float)patchCount); // v.v
+
+
+
+		}
+	}
+
+	glBindVertexArray(terrainVAO);
+	glDrawArrays(GL_PATCHES, 0, 4*patchCount*patchCount);
+
+
+
 	// cube VAO
 	unsigned int cubeVAO, VBO;
 
@@ -218,6 +263,7 @@ int main()
 	};
 
 	idk::Cubemap skyboxCubemap = (faces);
+
 
 	glm::mat4 model;
 	// Render loop

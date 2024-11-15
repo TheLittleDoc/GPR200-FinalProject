@@ -19,7 +19,9 @@ set(CORE_INC_DIR
 add_library(core STATIC ${CORE_SRC} ${CORE_INC} "idk/shader.h" "idk/shader.cpp" "idk/texture2d.h" "idk/texture2d.cpp" "idk/camera.h" "idk/camera.cpp" "ew/external/glad.h" "ew/external/glad.cpp")
 
 find_package(OpenGL REQUIRED)
-
+if(OPENGL_VERSION_MAJOR LESS 4)
+    message(FATAL_ERROR "OpenGL version 4.x or higher is required.")
+endif()
 target_link_libraries(core PUBLIC IMGUI)
 target_link_libraries(core PUBLIC IMGUI glm)
 
