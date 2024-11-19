@@ -1,8 +1,8 @@
 ﻿#version 410 core
 layout (vertices = 4) out;
 
-in vec2 TexCoords[];
-out vec2 TextureCoords[];
+in vec2 TexCoord[];
+out vec2 TextureCoord[];
 
 void main() {
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
