@@ -88,6 +88,82 @@ namespace idk
         glDeleteShader(fragment);
     }
 
+    Shader::Shader(const char *vertexPath, const char *fragmentPath, const char *tcsPath, const char *tesPath): Shader(vertexPath, fragmentPath) {
+        // retrieve just the tcs/tes source code from filePath
+        std::string tcsCode;
+        std::string tesCode;
+        std::ifstream tcsFile;
+        std::ifstream tesFile;
+        // ensure ifstream objects can throw exceptions:
+        tcsFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+        tesFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+        try {
+            // open files
+            tcsFile.open(tcsPath);
+            tesFile.open(tesPath);
+            std::stringstream tcsStream, tesStream;
+            // read file's buffer contents into streams
+            tcsStream << tcsFile.rdbuf();
+            tesStream << tesFile.rdbuf();
+            // close file handlers
+            tcsFile.close();
+            tesFile.close();
+            // convert stream into string
+            tcsCode = tcsStream.str();
+            tesCode = tesStream.str();
+
+        }
+        catch (std::ifstream::failure &e) {
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        }
+
+        const char* tcsShaderCode = tcsCode.c_str();
+        const char* tesShaderCode = tesCode.c_str();
+
+        unsigned int tcs, tes;
+        int success;
+        char infoLog[512];
+
+        // tcs Shader
+        tcs = glCreateShader(GL_TESS_CONTROL_SHADER);
+        glShaderSource(tcs, 1, &tcsShaderCode, NULL);
+        glCompileShader(tcs);
+        // print compile errors if any
+        glGetShaderiv(tcs, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(tcs, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::TESS_CONTROL::COMPILATION_FAILED\n" << infoLog << std::endl;
+        };
+
+        tes = glCreateShader(GL_TESS_EVALUATION_SHADER);
+        glShaderSource(tes, 1, &tesShaderCode, NULL);
+        glCompileShader(tes);
+        // print compile errors if any
+        glGetShaderiv(tes, GL_COMPILE_STATUS, &success);
+        if (!success)
+        {
+            glGetShaderInfoLog(tes, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::TESS_EVALUATION::COMPILATION_FAILED\n" << infoLog << std::endl;
+        };
+
+        glAttachShader(ID, tcs);
+        glAttachShader(ID, tes);
+        glLinkProgram(ID);
+        // print linking errors if any
+        glGetProgramiv(ID, GL_LINK_STATUS, &success);
+        if (!success)
+        {
+            glGetProgramInfoLog(ID, 512, NULL, infoLog);
+            std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
+        }
+
+        glDeleteShader(tcs);
+        glDeleteShader(tes);
+
+    }
+
     void Shader::use()
     {
         glUseProgram(ID);
