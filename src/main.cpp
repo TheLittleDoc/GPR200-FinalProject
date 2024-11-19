@@ -93,6 +93,7 @@ int main()
 
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
+	idk::Shader particleShader("assets/particles/particle.vert", "assets/particles/particle.frag");
 	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 
 	float vertices[] = {
@@ -183,7 +184,6 @@ int main()
 		-1.0f, -1.0f,  1.0f,
 		 1.0f, -1.0f,  1.0f
 	};
-
 	// cube VAO
 	unsigned int cubeVAO, VBO;
 
@@ -294,6 +294,7 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glDepthFunc(GL_LESS); // set depth function back to default
+
 
 		// Start drawing ImGUI
 		ImGui_ImplGlfw_NewFrame();
