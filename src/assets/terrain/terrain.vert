@@ -1,16 +1,16 @@
-﻿#version 410 core
-
-// vertex position
+﻿#version 330 core
 layout (location = 0) in vec3 aPos;
-// texture coordinate
-layout (location = 1) in vec2 aTex;
 
-out vec2 TexCoord;
+out float Height;
+out vec3 Position;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 void main()
 {
-    // convert XYZ vertex to XYZW homogeneous coordinate
-    gl_Position = vec4(aPos, 1.0);
-    // pass texture coordinate though
-    TexCoord = aTex;
+    Height = aPos.y;
+    Position = (view * model * vec4(aPos, 1.0)).xyz;
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
 }

@@ -98,7 +98,9 @@ int main()
 
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
+	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag");
 	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
+	//idk::Texture2D heightmapTexture("assets/terrain/heightmap_terrain.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -191,7 +193,6 @@ int main()
 
 	std::vector<float> terrainVerts;
 
-	unsigned int terrainVAO, terrainVBO;
 	unsigned int patchCount = 20;
 	for(unsigned int i = 0; i <= patchCount - 1; i++) {
 		for(unsigned int j = 0; j <= patchCount - 1; j++) {
@@ -224,9 +225,61 @@ int main()
 		}
 	}
 
-	glBindVertexArray(terrainVAO);
-	glDrawArrays(GL_PATCHES, 0, 4*patchCount*patchCount);
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("assets/terrain/heightmap_terrain.png", &width, &height, &nrChannels, 0);
 
+	std::vector<float> heightVertices;
+	float yScale = 64.0f / 256.0f, yShift = 16.0f;
+	int rez = 1;
+	unsigned bytePerPixel = nrChannels;
+	for (int i = 0; i < height; i++)
+	{
+		for (int j = 0; j < width; j++)
+		{
+			unsigned char* pixelOffset = data + (j + width * i) * bytePerPixel;
+			unsigned char y = pixelOffset[0];
+
+			// vertex
+			heightVertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
+			heightVertices.push_back((int)y * yScale - yShift);   // vy
+			heightVertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
+		}
+	}
+
+	std::vector<unsigned> indices;
+	for (unsigned i = 0; i < height - 1; i += rez)
+	{
+		for (unsigned j = 0; j < width; j += rez)
+		{
+			for (unsigned k = 0; k < 2; k++)
+			{
+				indices.push_back(j + width * (i + k * rez));
+			}
+		}
+	}
+
+	const int numStrips = (height - 1) / rez;
+	const int numTrisPerStrip = (width / rez) * 2 - 2;
+
+	// TERRAIN VAO, VBO, IBO
+	unsigned int terrainVAO, terrainVBO, terrainIBO;
+	glGenVertexArrays(1, &terrainVAO);
+	glBindVertexArray(terrainVAO);
+
+	glGenBuffers(1, &terrainVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+	glBufferData(GL_ARRAY_BUFFER, heightVertices.size() * sizeof(float), &heightVertices[0], GL_STATIC_DRAW);
+
+	// position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+
+	glGenBuffers(1, &terrainIBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terrainIBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
+
+	glBindVertexArray(terrainVAO);
+	glDrawArrays(GL_PATCHES, 0, 4 * patchCount * patchCount);
 
 
 	// cube VAO
@@ -300,6 +353,23 @@ int main()
 
 		// camera/view transformation
 		glm::mat4 view = camera.GetViewMatrix();
+		model = glm::mat4(1.0f);
+
+		heightMapShader.use();
+		heightMapShader.setMat4("projection", projection);
+		heightMapShader.setMat4("view", view);
+		heightMapShader.setMat4("model", model);
+
+		// render the terrain
+		glBindVertexArray(terrainVAO);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		for (unsigned strip = 0; strip < numStrips; strip++)
+		{
+			glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
+				numTrisPerStrip + 2,   // number of indices to render
+				GL_UNSIGNED_INT,     // index data type
+				(void*)(sizeof(unsigned) * (numTrisPerStrip + 2) * strip)); // offset to starting index
+		}
 
 		// draw
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -307,7 +377,6 @@ int main()
 		shader.use();
 		texture.Bind();
 		shader.setInt("uTexture", 0);
-		model = glm::mat4(1.0f);
 		shader.setVec3("viewPos", camera.Position);
 		shader.setVec3("lightPos", lightPosEditable);
 		shader.setVec3("lightColor", lightColorEditable);
