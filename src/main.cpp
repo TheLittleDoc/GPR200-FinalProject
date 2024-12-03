@@ -37,6 +37,7 @@ void processInput(GLFWwindow* window);
 
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 1080;
+const unsigned int NUM_PATCH_PTS = 4;
 
 // camera
 idk::Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -98,7 +99,7 @@ int main()
 
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
-	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag");
+	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag", "assets/terrain/terrain.tesc", "assets/terrain/terrain.tese");
 	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 	//idk::Texture2D heightmapTexture("assets/terrain/heightmap_terrain.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 
@@ -191,60 +192,59 @@ int main()
 		 1.0f, -1.0f,  1.0f
 	};
 
-	std::vector<float> terrainVerts;
-
-	unsigned int patchCount = 20;
-	for(unsigned int i = 0; i <= patchCount - 1; i++) {
-		for(unsigned int j = 0; j <= patchCount - 1; j++) {
-			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)i / (float)patchCount)); // v.x
-			terrainVerts.push_back(0.0f); // v.y
-			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)j / (float)patchCount)); // v.z
-			terrainVerts.push_back(i / (float)patchCount); // v.u
-			terrainVerts.push_back(j / (float)patchCount); // v.v
-
-			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)(i + 1) / (float)patchCount)); // v.x
-			terrainVerts.push_back(0.0f); // v.y
-			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)j / (float)patchCount)); // v.z
-			terrainVerts.push_back((i + 1) / (float)patchCount); // v.u
-			terrainVerts.push_back(j / (float)patchCount); // v.v
-
-			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)i / (float)patchCount)); // v.x
-			terrainVerts.push_back(0.0f); // v.y
-			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)(j + 1) / (float)patchCount)); // v.z
-			terrainVerts.push_back(i / (float)patchCount); // v.u
-			terrainVerts.push_back((j + 1) / (float)patchCount); // v.v
-
-			terrainVerts.push_back(-TERR_WIDTH / 2.0f + (TERR_WIDTH * (float)(i + 1) / (float)patchCount)); // v.x
-			terrainVerts.push_back(0.0f); // v.y
-			terrainVerts.push_back(-TERR_LENGTH / 2.0f + (TERR_LENGTH * (float)(j + 1) / (float)patchCount)); // v.z
-			terrainVerts.push_back((i + 1) / (float)patchCount); // v.u
-			terrainVerts.push_back((j + 1) / (float)patchCount); // v.v
-
-
-
-		}
-	}
+	// Terrain Setup
+	GLint maxTessLevel;
+	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
 
 	int width, height, nrChannels;
-	unsigned char* data = stbi_load("assets/terrain/heightmap_terrain.png", &width, &height, &nrChannels, 0);
+	unsigned char* data = stbi_load("assets/terrain/heightmap_terrain.png", &width, &height, &nrChannels, 4);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		heightMapShader.setInt("heightMap", 0);
+		std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
 
 	std::vector<float> heightVertices;
 	float yScale = 64.0f / 256.0f, yShift = 16.0f;
-	int rez = 1;
-	unsigned bytePerPixel = nrChannels;
-	for (int i = 0; i < height; i++)
+	int rez = 20;
+	for (unsigned i = 0; i <= rez - 1; i++)
 	{
-		for (int j = 0; j < width; j++)
+		for (unsigned j = 0; j <= rez - 1; j++)
 		{
-			unsigned char* pixelOffset = data + (j + width * i) * bytePerPixel;
-			unsigned char y = pixelOffset[0];
+			heightVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+			heightVertices.push_back(0.0f); // v.y
+			heightVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+			heightVertices.push_back(i / (float)rez); // u
+			heightVertices.push_back(j / (float)rez); // v
 
-			// vertex
-			heightVertices.push_back(-height / 2.0f + height * i / (float)height);   // vx
-			heightVertices.push_back((int)y * yScale - yShift);   // vy
-			heightVertices.push_back(-width / 2.0f + width * j / (float)width);   // vz
+			heightVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+			heightVertices.push_back(0.0f); // v.y
+			heightVertices.push_back(-height / 2.0f + height * j / (float)rez); // v.z
+			heightVertices.push_back((i + 1) / (float)rez); // u
+			heightVertices.push_back(j / (float)rez); // v
+
+			heightVertices.push_back(-width / 2.0f + width * i / (float)rez); // v.x
+			heightVertices.push_back(0.0f); // v.y
+			heightVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+			heightVertices.push_back(i / (float)rez); // u
+			heightVertices.push_back((j + 1) / (float)rez); // v
+
+			heightVertices.push_back(-width / 2.0f + width * (i + 1) / (float)rez); // v.x
+			heightVertices.push_back(0.0f); // v.y
+			heightVertices.push_back(-height / 2.0f + height * (j + 1) / (float)rez); // v.z
+			heightVertices.push_back((i + 1) / (float)rez); // u
+			heightVertices.push_back((j + 1) / (float)rez); // v
 		}
 	}
+	unsigned bytePerPixel = nrChannels;
 
 	std::vector<unsigned> indices;
 	for (unsigned i = 0; i < height - 1; i += rez)
@@ -279,8 +279,9 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned), &indices[0], GL_STATIC_DRAW);
 
 	glBindVertexArray(terrainVAO);
-	glDrawArrays(GL_PATCHES, 0, 4 * patchCount * patchCount);
+	glDrawArrays(GL_PATCHES, 0, 4 * rez * rez);
 
+	glPatchParameteri(GL_PATCH_vertices, NUM_PATCH_PTS);
 
 	// cube VAO
 	unsigned int cubeVAO, VBO;
@@ -363,17 +364,12 @@ int main()
 		// render the terrain
 		glBindVertexArray(terrainVAO);
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		for (unsigned strip = 0; strip < numStrips; strip++)
-		{
-			glDrawElements(GL_TRIANGLE_STRIP,   // primitive type
-				numTrisPerStrip + 2,   // number of indices to render
-				GL_UNSIGNED_INT,     // index data type
-				(void*)(sizeof(unsigned) * (numTrisPerStrip + 2) * strip)); // offset to starting index
-		}
+
+		glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
 		// draw
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+		
 		shader.use();
 		texture.Bind();
 		shader.setInt("uTexture", 0);
