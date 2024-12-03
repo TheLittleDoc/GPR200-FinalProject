@@ -98,7 +98,7 @@ int main()
 
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
-	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag");
+	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag", "assets/terrain/terrain.tesc", "assets/terrain/terrain.tese");
 	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 	//idk::Texture2D heightmapTexture("assets/terrain/heightmap_terrain.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 

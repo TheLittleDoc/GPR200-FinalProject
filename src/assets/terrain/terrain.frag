@@ -1,11 +1,9 @@
-﻿#version 330 core
-
+﻿#version 410
+in float Height;
 out vec4 FragColor;
 
-in float Height;
-
-void main()
-{
-    float h = (Height + 16)/32.0f;	// shift and scale the height into a grayscale value
+void main() {
+    float h = (Height + 16)/64.0f;
     FragColor = vec4(h, h, h, 1.0);
+
 }
