@@ -18,7 +18,7 @@
 #include <math.h>
 
 #include <ew/external/glad.h>
-#include <ew/ewMath/ewMath.h>
+//#include <..ew/ewMath/ewMath.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
@@ -26,6 +26,7 @@
 #include <idk/shader.h>
 #include <idk/cubemap.h>
 #include <idk/camera.h>
+#include <idk/particles.h>
 
 #include <idk/texture2d.h>
 #include <ew/external/stb_image.h>
@@ -232,6 +233,10 @@ int main()
 	idk::Cubemap skyboxCubemap = (faces);
 
 	glm::mat4 model;
+
+	//particle attributes
+	idk::ParticleGenerator partGen(particleShader, texture, 10);
+
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 

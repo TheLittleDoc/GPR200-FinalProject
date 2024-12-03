@@ -114,4 +114,14 @@ namespace idk
     {
         glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
     }
+
+    void Shader::setVec2(const std::string& name, glm::vec2 value) const
+    {
+        glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+    }
+
+    void Shader::setVec4(const std::string& name, glm::vec4 value) const
+    {
+        glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+    }
 }

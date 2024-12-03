@@ -1,14 +1,17 @@
 #ifndef PARTICLES_H
 #define PARTICLES_H
-#include <vector>
 
-#include <glad/glad.h>
+#include "../ew/external/glad.h"
+#include <vector>
 #include <glm/glm.hpp>
 
 #include "shader.h"
 #include "texture2d.h"
 //basis for this file aquired from opengl tutorial: https://learnopengl.com/In-Practice/2D-Game/Particles
-
+//edits made by joshua scalia
+// 
+namespace idk
+{
 // Represents a single particle and its state
 struct Particle {
     glm::vec2 Position, Velocity;
@@ -19,32 +22,32 @@ struct Particle {
 };
 
 
-// ParticleGenerator acts as a container for rendering a large number of 
-// particles by repeatedly spawning and updating particles and killing 
-// them after a given amount of time.
+//This class makes the particles while using the previous struct (Particle)
 class ParticleGenerator
 {
 public:
-    // constructor
-    ParticleGenerator(Shader shader, Texture2D texture, unsigned int amount);
-    // update all particles
+    //constructor
+    ParticleGenerator(idk::Shader shader, idk::Texture2D texture, unsigned int amount);
+    //update all particles' positions and data
     void Update(float dt, glm::vec2 spawnPos, unsigned int newParticles, glm::vec2 offset = glm::vec2(0.0f, 0.0f));
-    // render all particles
+    //render all particles
     void Draw();
 private:
     // state
     std::vector<Particle> particles;
     unsigned int amount;
     // render state
-    Shader shader;
-    Texture2D texture;
+    idk::Shader shader;
+    idk::Texture2D texture;
     unsigned int VAO;
     // initializes buffer and vertex attributes
     void init();
     // returns the first Particle index that's currently unused e.g. Life <= 0.0f or 0 if no particle is currently inactive
     unsigned int firstUnusedParticle();
-    // respawns particle
+    // respawns particle, used in effect to keep the particles flowing.
     void respawnParticle(Particle& particle, glm::vec2 respawnPos , glm::vec2 offset = glm::vec2(0.0f, 0.0f));
 };
+}
+
 
 #endif
