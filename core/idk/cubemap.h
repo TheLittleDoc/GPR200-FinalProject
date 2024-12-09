@@ -1,3 +1,5 @@
+//File author: Evan Noel
+
 #ifndef CUBEMAP_H
 #define CUBEMAP_H
 
