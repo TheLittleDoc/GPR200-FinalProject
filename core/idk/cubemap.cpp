@@ -1,3 +1,5 @@
+//File author: Evan Noel
+
 #include "cubemap.h"
 #include "../ew/external/glad.h"
 #include "../ew/external/stb_image.h"
@@ -11,6 +13,8 @@ namespace idk
         glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
         int width, height, nrChannels;
+
+        // setup each face texture
         for (unsigned int i = 0; i < faces.size(); i++)
         {
             unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
@@ -25,6 +29,8 @@ namespace idk
                 stbi_image_free(data);
             }
         }
+
+        // specify wrapping and filtering methods
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
