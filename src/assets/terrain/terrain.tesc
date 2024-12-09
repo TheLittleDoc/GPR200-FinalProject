@@ -1,6 +1,9 @@
 ﻿#version 410 core
 layout (vertices = 4) out;
 
+uniform mat4 model;
+uniform mat4 view;
+
 in vec2 TexCoord[];
 out vec2 TextureCoord[];
 
@@ -12,8 +15,8 @@ void main() {
     {
         const int MIN_TESS_LEVEL = 4;
         const int MAX_TESS_LEVEL = 64;
-        const float MIN_DISTANCE = 20;
-        const float MAX_DISTANCE = 800;
+        const float MIN_DISTANCE = 10;
+        const float MAX_DISTANCE = 50;
 
         vec4 eyeSpacePos00 = view * model * gl_in[0].gl_Position;
         vec4 eyeSpacePos01 = view * model * gl_in[1].gl_Position;
