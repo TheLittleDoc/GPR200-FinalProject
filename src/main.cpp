@@ -58,10 +58,15 @@ glm::mat4 editModel = glm::mat4(1.0f);
 glm::vec3 lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
 glm::vec3 lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+int minTessellationEditable = 1;
+int maxTessellationEditable = 64;
+float minTessellationDistance = 20.0f;
+float maxTessellationDistance = 70.0f;
 float ambientStrengthEditable = 0.1f;
 float specularStrengthEditable = 0.5f;
 float shininessEditable = 32.0f;
 float diffuseStrengthEditable = 0.5f;
+bool wireframeMode = false;
 
 
 int main()
@@ -318,9 +323,10 @@ int main()
 
 	glm::mat4 model;
 	// Render loop
-	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+	//
 	while (!glfwWindowShouldClose(window)) {
-
+		if (wireframeMode) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		// update time varaiables
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
@@ -351,6 +357,12 @@ int main()
 		heightMapShader.setMat4("model", model);
 		heightMapShader.setMat4("projection", projection);
 		heightMapShader.setMat4("view", view);
+		heightMapShader.setInt("uMinTessellation", minTessellationEditable);
+		heightMapShader.setInt("uMaxTessellation", maxTessellationEditable);
+		heightMapShader.setFloat("uMinDistance", minTessellationDistance);
+		heightMapShader.setFloat("uMaxDistance", maxTessellationDistance);
+
+
 
 		// render the terrain
 		glBindVertexArray(terrainVAO);
@@ -414,17 +426,31 @@ int main()
 			ImGui::DragFloat("Specular Strength", &specularStrengthEditable, 0.01f);
 			ImGui::DragFloat("Shininess", &shininessEditable, 0.01f);
 			ImGui::DragFloat("Diffuse Strength", &diffuseStrengthEditable, 0.01f);
-			if (ImGui::Button("Reset Values"))
-			{
-				editModel = glm::mat4(1.0f);
-				lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
-				lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
-				objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
-				ambientStrengthEditable = 0.1f;
-				specularStrengthEditable = 0.5f;
-				shininessEditable = 32.0f;
-				diffuseStrengthEditable = 0.5f;
-			}
+
+
+		}
+
+		if (ImGui::CollapsingHeader("Tessellation Controls")) {
+			ImGui::Checkbox("Render as Wireframe", &wireframeMode);
+			//sliders with limits
+			ImGui::DragInt("Min Tessellation", &minTessellationEditable, 0.01f, 1, 64);
+			ImGui::DragInt("Max Tessellation", &maxTessellationEditable, 0.01f, 1, 64);
+			ImGui::Separator();
+			ImGui::DragFloat("Min Tessellation Distance", &minTessellationDistance, 0.01f, 0.0f, 100.0f);
+			ImGui::DragFloat("Max Tessellation Distance", &maxTessellationDistance, 0.01f, 0.0f, 100.0f);
+		}
+		if (ImGui::Button("Reset Values"))
+		{
+			editModel = glm::mat4(1.0f);
+			lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
+			lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
+			objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+			ambientStrengthEditable = 0.1f;
+			specularStrengthEditable = 0.5f;
+			shininessEditable = 32.0f;
+			diffuseStrengthEditable = 0.5f;
+			minTessellationEditable = 1;
+			maxTessellationEditable = 64;
 		}
 		ImGui::End();
 

@@ -4,6 +4,11 @@ layout (vertices = 4) out;
 uniform mat4 model;
 uniform mat4 view;
 
+uniform int uMinTessellation;
+uniform int uMaxTessellation;
+uniform float uMinDistance;
+uniform float uMaxDistance;
+
 in vec2 TexCoord[];
 out vec2 TextureCoord[];
 
@@ -13,10 +18,10 @@ void main() {
 
     if(gl_InvocationID == 0)
     {
-        const int MIN_TESS_LEVEL = 4;
-        const int MAX_TESS_LEVEL = 64;
-        const float MIN_DISTANCE = 10;
-        const float MAX_DISTANCE = 50;
+        int MIN_TESS_LEVEL = uMinTessellation;
+        int MAX_TESS_LEVEL = uMaxTessellation;
+        float MIN_DISTANCE = uMinDistance;
+        float MAX_DISTANCE = uMaxDistance;
 
         vec4 eyeSpacePos00 = view * model * gl_in[0].gl_Position;
         vec4 eyeSpacePos01 = view * model * gl_in[1].gl_Position;
