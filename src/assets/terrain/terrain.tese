@@ -1,14 +1,25 @@
-﻿#version 410 core
+﻿/******************************************************************************
+* File name: terrain.tese   File author(s): Jeffrey Paone (LearnOpenGL)       *
+*                                           Mod. by Elysium Hosack            *
+* File description:                                                           *
+* Evaluation shader. Maps arbitrary patch locations to actual vertices        *
+*                                                                             *
+* Cloned: 12/3/2024         Edited last: 12/09/2024                           *
+* Key Methods: N/A                                                            *
+******************************************************************************/
+
+#version 410 core
 layout (quads, fractional_odd_spacing, ccw) in;
 
-uniform sampler2D heightMap;  // the texture corresponding to our height map
-uniform mat4 model;           // the model matrix
-uniform mat4 view;            // the view matrix
-uniform mat4 projection;      // the projection matrix
+uniform sampler2D heightMap;
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
 
 in vec2 TextureCoord[];
 
 out float Height;
+out vec2 textureCoords;
 
 void main() {
     float u = gl_TessCoord.x;
@@ -23,7 +34,7 @@ void main() {
     vec2 t1 = (t11 - t10) * u + t10;
     vec2 texCoord = (t1 - t0) * v + t0;
 
-    Height = texture(heightMap, texCoord).y * 4.0f;
+    Height = texture(heightMap, texCoord).y * 6.0f - 10.0f;
 
     vec4 p00 = gl_in[0].gl_Position;
     vec4 p01 = gl_in[1].gl_Position;
@@ -37,7 +48,7 @@ void main() {
     vec4 p0 = (p01 - p00) * u + p00;
     vec4 p1 = (p11 - p10) * u + p10;
     vec4 p = (p1 - p0) * v + p0 + normal * Height;
-
+    textureCoords = texCoord;
     gl_Position = projection * view * model * p;
 }
 
