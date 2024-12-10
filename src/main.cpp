@@ -1,14 +1,14 @@
-/******************************************************************************
-* File name:                File author(s): Evan Noel, Elysium Hosack,        *
-*                                           based on template from Eric       *
-* File description:                         Winebrenner                       *
-*                                                                             *
-*                                                                             *
-*                                                                             *
-* Cloned:                   Edited last:                                      *
-* Key Methods:                                                                *
-*                                                                             *
-******************************************************************************/
+/***************************************************************************************
+* File name: main.cpp    File author(s): Evan Noel, Elysium Hosack, Joshua Scalia      *
+*                                           based on template from Eric                *
+* File description:                         Winebrenner                                *
+*                                                                                      *
+*                                                                                      *
+*                                                                                      *
+* Cloned:                   Edited last: 12/10/24                                      *
+* Key Methods:                                                                         *
+*                                                                                      *
+****************************************************************************************/
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -30,6 +30,7 @@
 #include <idk/texture2d.h>
 #include <ew/external/stb_image.h>
 
+//window settings
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -71,6 +72,7 @@ bool wireframeMode = false;
 
 int main()
 {
+	//initialization
 	printf("Initializing...");
 	if (!glfwInit()) {
 		printf("GLFW failed to init!");
@@ -102,6 +104,7 @@ int main()
 
 	glPatchParameteri(GL_PATCH_vertices, 4);
 
+	//shaders
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
 	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag", "assets/terrain/terrain.tesc", "assets/terrain/terrain.tese");
@@ -323,7 +326,6 @@ int main()
 
 	glm::mat4 model;
 	// Render loop
-	//
 	while (!glfwWindowShouldClose(window)) {
 		if (wireframeMode) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 		else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
@@ -352,7 +354,7 @@ int main()
 		heightMapShader.use();
 		//bind texture
 
-
+		//setup terrain shaders values
 		heightMapShader.setInt("heightMap", 0);
 		heightMapShader.setMat4("model", model);
 		heightMapShader.setMat4("projection", projection);
@@ -373,6 +375,7 @@ int main()
 		// draw
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
+		//lighting
 		shader.use();
 		glActiveTexture(GL_TEXTURE1);
 		texture.Bind(1);
@@ -417,6 +420,7 @@ int main()
 		// Create a window called settings
 		ImGui::Begin("Settings");
 		ImGui::Text("Controls");
+		//light shader imgui
 		if (ImGui::CollapsingHeader("ShaderStuff"))
 		{
 			ImGui::DragFloat3("Light Position", &lightPosEditable.x, 0.01f);
@@ -429,7 +433,7 @@ int main()
 
 
 		}
-
+		//terrain imgui
 		if (ImGui::CollapsingHeader("Tessellation Controls")) {
 			ImGui::Checkbox("Render as Wireframe", &wireframeMode);
 			//sliders with limits
