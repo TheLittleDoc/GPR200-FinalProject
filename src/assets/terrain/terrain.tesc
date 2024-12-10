@@ -1,4 +1,14 @@
-﻿#version 410 core
+﻿/******************************************************************************
+* File name: terrain.tesc   File author(s): Jeffrey Paone (LearnOpenGL)       *
+*                                           Mod. by Elysium Hosack            *
+* File description:                                                           *
+* Sets up patches and determines how much tessellation to apply               *
+*                                                                             *
+* Cloned: 12/3/2024         Edited last: 12/09/2024                           *
+* Key Methods: N/A                                                            *
+******************************************************************************/
+
+#version 410 core
 layout (vertices = 4) out;
 
 uniform mat4 model;
@@ -18,6 +28,7 @@ void main() {
 
     if(gl_InvocationID == 0)
     {
+        // changed these to uniforms for the ability to manipulate with ImGui
         int MIN_TESS_LEVEL = uMinTessellation;
         int MAX_TESS_LEVEL = uMaxTessellation;
         float MIN_DISTANCE = uMinDistance;
@@ -34,6 +45,7 @@ void main() {
         float distance10 = clamp( (abs(eyeSpacePos10.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0 );
         float distance11 = clamp( (abs(eyeSpacePos11.z) - MIN_DISTANCE) / (MAX_DISTANCE-MIN_DISTANCE), 0.0, 1.0 );
 
+        // tessellation level is interpolated across the range
         float tessLevel0 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance10, distance00) );
         float tessLevel1 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance00, distance01) );
         float tessLevel2 = mix( MAX_TESS_LEVEL, MIN_TESS_LEVEL, min(distance01, distance11) );
