@@ -38,6 +38,7 @@ void processInput(GLFWwindow* window);
 
 const int SCREEN_WIDTH = 1080;
 const int SCREEN_HEIGHT = 1080;
+const unsigned int NUM_PATCH_PTS = 4;
 
 // camera
 idk::Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -49,16 +50,24 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
+const float TERR_WIDTH = 100.0f;
+const float TERR_LENGTH = 100.0f;
+
 //imgui variables
 glm::vec3 testEditer = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::mat4 editModel = glm::mat4(1.0f);
 glm::vec3 lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
 glm::vec3 lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+int minTessellationEditable = 1;
+int maxTessellationEditable = 64;
+float minTessellationDistance = 20.0f;
+float maxTessellationDistance = 70.0f;
 float ambientStrengthEditable = 0.1f;
 float specularStrengthEditable = 0.5f;
 float shininessEditable = 32.0f;
 float diffuseStrengthEditable = 0.5f;
+bool wireframeMode = false;
 
 
 int main()
@@ -92,10 +101,18 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init();
 
+	glPatchParameteri(GL_PATCH_vertices, 4);
+
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
+<<<<<<< HEAD
 	idk::Shader particleShader("assets/particles/particle.vert", "assets/particles/particle.frag");
+=======
+	idk::Shader heightMapShader("assets/terrain/terrain.vert", "assets/terrain/terrain.frag", "assets/terrain/terrain.tesc", "assets/terrain/terrain.tese");
+>>>>>>> f098bab2137391d00532bd0be3d1d37735a53db9
 	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
+	texture.Bind(1);
+	//idk::Texture2D heightmapTexture("assets/terrain/heightmap_terrain.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -185,6 +202,86 @@ int main()
 		-1.0f, -1.0f,  1.0f,
 		 1.0f, -1.0f,  1.0f
 	};
+<<<<<<< HEAD
+=======
+
+	// Terrain Setup
+	GLint maxTessLevel;
+	glGetIntegerv(GL_MAX_TESS_GEN_LEVEL, &maxTessLevel);
+
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("assets/terrain/heightmap_terrain.png", &width, &height, &nrChannels, 4);
+	if (data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+
+		heightMapShader.setInt("heightMap", 0);
+		std::cout << "Loaded heightmap of size " << height << " x " << width << std::endl;
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(data);
+
+	//get texture handle
+
+
+	std::vector<float> heightmapVerts;
+	
+    unsigned rez = 10;
+    for(unsigned i = 0; i <= rez-1; i++)
+    {
+        for(unsigned j = 0; j <= rez-1; j++)
+        {
+            heightmapVerts.push_back(-TERR_WIDTH/2.0f + TERR_WIDTH*i/(float)rez); // v.x
+            heightmapVerts.push_back(0.0f); // v.y
+            heightmapVerts.push_back(-TERR_LENGTH/2.0f + TERR_LENGTH*j/(float)rez); // v.z
+            heightmapVerts.push_back(i / (float)rez); // u
+            heightmapVerts.push_back(j / (float)rez); // v
+
+            heightmapVerts.push_back(-TERR_WIDTH/2.0f + TERR_WIDTH*(i+1)/(float)rez); // v.x
+            heightmapVerts.push_back(0.0f); // v.y
+            heightmapVerts.push_back(-TERR_LENGTH/2.0f + TERR_LENGTH*j/(float)rez); // v.z
+            heightmapVerts.push_back((i+1) / (float)rez); // u
+            heightmapVerts.push_back(j / (float)rez); // v
+
+            heightmapVerts.push_back(-TERR_WIDTH/2.0f + TERR_WIDTH*i/(float)rez); // v.x
+            heightmapVerts.push_back(0.0f); // v.y
+            heightmapVerts.push_back(-TERR_LENGTH/2.0f + TERR_LENGTH*(j+1)/(float)rez); // v.z
+            heightmapVerts.push_back(i / (float)rez); // u
+            heightmapVerts.push_back((j+1) / (float)rez); // v
+
+            heightmapVerts.push_back(-TERR_WIDTH/2.0f + TERR_WIDTH*(i+1)/(float)rez); // v.x
+            heightmapVerts.push_back(0.0f); // v.y
+            heightmapVerts.push_back(-TERR_LENGTH/2.0f + TERR_LENGTH*(j+1)/(float)rez); // v.z
+            heightmapVerts.push_back((i+1) / (float)rez); // u
+            heightmapVerts.push_back((j+1) / (float)rez); // v
+        }
+    }
+    std::cout << "Loaded " << rez*rez << " patches of 4 control points each" << std::endl;
+    std::cout << "Processing " << rez*rez*4 << " heightmapVerts in vertex shader" << std::endl;
+
+    // first, configure the cube's VAO (and terrainVBO)
+    unsigned int terrainVAO, terrainVBO;
+    glGenVertexArrays(1, &terrainVAO);
+    glBindVertexArray(terrainVAO);
+
+    glGenBuffers(1, &terrainVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, terrainVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * heightmapVerts.size(), &heightmapVerts[0], GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // texCoord attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(sizeof(float) * 3));
+    glEnableVertexAttribArray(1);
+
+    glPatchParameteri(GL_PATCH_vertices, NUM_PATCH_PTS);;
+
+>>>>>>> f098bab2137391d00532bd0be3d1d37735a53db9
 	// cube VAO
 	unsigned int cubeVAO, VBO;
 
@@ -238,8 +335,10 @@ int main()
 	idk::ParticleGenerator partGen(particleShader, texture, 10);
 
 	// Render loop
+	//
 	while (!glfwWindowShouldClose(window)) {
-
+		if (wireframeMode) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+		else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 		// update time varaiables
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
@@ -249,7 +348,7 @@ int main()
 		processInput(window);
 
 		// Clear framebuffer
-		glClearColor(0.07f, 0.2f, 0.0f, 0.0f);
+		glClearColor(0.07f, 0.03f, 0.05f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// update the time variable
@@ -260,14 +359,36 @@ int main()
 
 		// camera/view transformation
 		glm::mat4 view = camera.GetViewMatrix();
+		model = glm::mat4(1.0f);
+
+		heightMapShader.use();
+		//bind texture
+
+
+		heightMapShader.setInt("heightMap", 0);
+		heightMapShader.setMat4("model", model);
+		heightMapShader.setMat4("projection", projection);
+		heightMapShader.setMat4("view", view);
+		heightMapShader.setInt("uMinTessellation", minTessellationEditable);
+		heightMapShader.setInt("uMaxTessellation", maxTessellationEditable);
+		heightMapShader.setFloat("uMinDistance", minTessellationDistance);
+		heightMapShader.setFloat("uMaxDistance", maxTessellationDistance);
+
+
+
+		// render the terrain
+		glBindVertexArray(terrainVAO);
+		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+		glDrawArrays(GL_PATCHES, 0, NUM_PATCH_PTS * rez * rez);
 
 		// draw
 		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
+		
 		shader.use();
-		texture.Bind();
-		shader.setInt("uTexture", 0);
-		model = glm::mat4(1.0f);
+		glActiveTexture(GL_TEXTURE1);
+		texture.Bind(1);
+		shader.setInt("uTexture", 1);
 		shader.setVec3("viewPos", camera.Position);
 		shader.setVec3("lightPos", lightPosEditable);
 		shader.setVec3("lightColor", lightColorEditable);
@@ -294,7 +415,7 @@ int main()
 		skyboxShader.setMat4("projection", projection);
 		// skybox cube
 		glBindVertexArray(skyboxVAO);
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemap.GetID());
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
@@ -318,17 +439,31 @@ int main()
 			ImGui::DragFloat("Specular Strength", &specularStrengthEditable, 0.01f);
 			ImGui::DragFloat("Shininess", &shininessEditable, 0.01f);
 			ImGui::DragFloat("Diffuse Strength", &diffuseStrengthEditable, 0.01f);
-			if (ImGui::Button("Reset Values"))
-			{
-				editModel = glm::mat4(1.0f);
-				lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
-				lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
-				objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
-				ambientStrengthEditable = 0.1f;
-				specularStrengthEditable = 0.5f;
-				shininessEditable = 32.0f;
-				diffuseStrengthEditable = 0.5f;
-			}
+
+
+		}
+
+		if (ImGui::CollapsingHeader("Tessellation Controls")) {
+			ImGui::Checkbox("Render as Wireframe", &wireframeMode);
+			//sliders with limits
+			ImGui::DragInt("Min Tessellation", &minTessellationEditable, 0.01f, 1, 64);
+			ImGui::DragInt("Max Tessellation", &maxTessellationEditable, 0.01f, 1, 64);
+			ImGui::Separator();
+			ImGui::DragFloat("Min Tessellation Distance", &minTessellationDistance, 0.01f, 0.0f, 100.0f);
+			ImGui::DragFloat("Max Tessellation Distance", &maxTessellationDistance, 0.01f, 0.0f, 100.0f);
+		}
+		if (ImGui::Button("Reset Values"))
+		{
+			editModel = glm::mat4(1.0f);
+			lightPosEditable = glm::vec3(1.2f, 1.0f, 2.0f);
+			lightColorEditable = glm::vec3(1.0f, 1.0f, 1.0f);
+			objectColorEditable = glm::vec3(1.0f, 0.5f, 0.31f);
+			ambientStrengthEditable = 0.1f;
+			specularStrengthEditable = 0.5f;
+			shininessEditable = 32.0f;
+			diffuseStrengthEditable = 0.5f;
+			minTessellationEditable = 1;
+			maxTessellationEditable = 64;
 		}
 		ImGui::End();
 
