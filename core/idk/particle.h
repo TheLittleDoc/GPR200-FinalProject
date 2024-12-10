@@ -1,6 +1,6 @@
 ﻿//
 // Created by elysium.hosack on 11/15/2024.
-//
+// Edits done by Josh Scalia, although they are in a seperate branch called joshTemp due to conflicting with main project in the end
 #pragma once
 #ifndef PARTICLE_H
 #define PARTICLE_H
