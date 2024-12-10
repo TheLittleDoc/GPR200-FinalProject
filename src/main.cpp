@@ -95,8 +95,9 @@ int main()
 	idk::Shader shader("assets/cube.vert", "assets/cube.frag");
 	idk::Shader skyboxShader("assets/cubemap.vert", "assets/cubemap.frag");
 	idk::Shader particleShader("assets/particles/particle.vert", "assets/particles/particle.frag");
-	idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
-
+	idk::Texture2D texture("assets/particles/redSquare.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
+	//idk::Texture2D texture("assets/AverageNebraskaResident.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
+	//idk::Texture2D partTexture("assets/particles/redSquare.png", GL_NEAREST, GL_CLAMP_TO_EDGE, true);
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
@@ -236,7 +237,7 @@ int main()
 
 	//particle attributes
 	idk::ParticleGenerator partGen(particleShader, texture, 10);
-
+	partGen.Update(0.001f, glm::vec3(1.0f, 1.0f, 1.0f), 10);
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 
@@ -299,8 +300,11 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glDepthFunc(GL_LESS); // set depth function back to default
-
-
+		//particle test
+		particleShader.use();
+		texture.Bind();
+		partGen.Draw();
+		partGen.Update(0.001f, glm::vec3(1.0f, 1.0f, 1.0f), 10);
 		// Start drawing ImGUI
 		ImGui_ImplGlfw_NewFrame();
 		ImGui_ImplOpenGL3_NewFrame();

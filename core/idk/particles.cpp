@@ -9,7 +9,7 @@ ParticleGenerator::ParticleGenerator(idk::Shader shader, idk::Texture2D texture,
     this->init();
 }
 
-void ParticleGenerator::Update(float dt, glm::vec2 object, unsigned int newParticles, glm::vec2 offset)
+void ParticleGenerator::Update(float dt, glm::vec3 object, unsigned int newParticles, glm::vec3 offset)
 {
     // add new particles 
     for (unsigned int i = 0; i < newParticles; i++)
@@ -25,7 +25,7 @@ void ParticleGenerator::Update(float dt, glm::vec2 object, unsigned int newParti
         if (p.Life > 0.0f)
         {	// particle is alive, thus update
             p.Position -= p.Velocity * dt;
-            p.Color.a -= dt * 2.5f;
+            //p.Color.a -= dt * 2.5f;
         }
     }
 }
@@ -40,7 +40,7 @@ void ParticleGenerator::Draw()
     {
         if (particle.Life > 0.0f)
         {
-            this->shader.setVec2("offset", particle.Position);
+            this->shader.setVec3("offset", particle.Position);
             this->shader.setVec4("color", particle.Color);
             this->texture.Bind();
             glBindVertexArray(this->VAO);
@@ -104,7 +104,7 @@ unsigned int ParticleGenerator::firstUnusedParticle()
     return 0;
 }
 
-void ParticleGenerator::respawnParticle(Particle& particle, glm::vec2 object, glm::vec2 offset)
+void ParticleGenerator::respawnParticle(Particle& particle, glm::vec3 object, glm::vec3 offset)
 {
     //setup all values based on the object (aka spawn point)
     float random = ((rand() % 100) - 50) / 10.0f;
